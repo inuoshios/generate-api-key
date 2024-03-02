@@ -4,6 +4,7 @@ import (
 	crypto "crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"strings"
 
@@ -227,6 +228,69 @@ func generateBase32(options GenerateKeyOptions) (any, error) {
 	}
 }
 
+// base62Encode encodes a byte slice to a Base62 string
+func base62Encode(input []byte, charPool string) string {
+	base := big.NewInt(62)
+	result := ""
+
+	number := big.NewInt(0).SetBytes(input)
+	zero := big.NewInt(0)
+
+	for number.Cmp(zero) > 0 {
+		// Calculate the modulus and prepend the corresponding character
+		mod := new(big.Int)
+		number.DivMod(number, base, mod)
+		result = string(charPool[mod.Int64()]) + result
+	}
+
+	return result
+}
+
+// removeDashes removes dashes from the UUID string
+func removeDashes(uuid string) string {
+	return strings.ReplaceAll(uuid, "-", "")
+}
+
+func generateBase62(options GenerateKeyOptions) (any, error) {
+	const BASE62_CHAR_POOL = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	if options.Length != 0 {
+		return nil, fmt.Errorf("length is not supported for base62 method")
+	}
+	if options.Pool != "" {
+		return nil, fmt.Errorf("pool is not supported for base62 method")
+	}
+	if options.Dashes {
+		return nil, fmt.Errorf("dashes is not supported for base62 method")
+	}
+
+	if options.Batch > 1 {
+		var batchResults []string
+		for i := uint32(0); i < options.Batch; i++ {
+			uuid := uuid.New().String()
+			uuid = removeDashes(uuid)
+			uuidBytes, err := hex.DecodeString(uuid)
+			if err != nil {
+				return nil, err
+			}
+
+			apiKey := base62Encode(uuidBytes, BASE62_CHAR_POOL)
+			batchResults = append(batchResults, apiKey)
+		}
+		return batchResults, nil
+	} else {
+		uuid := uuid.New().String()
+		uuid = removeDashes(uuid)
+		uuidBytes, err := hex.DecodeString(uuid)
+		if err != nil {
+			return nil, err
+		}
+
+		apiKey := base62Encode(uuidBytes, BASE62_CHAR_POOL)
+
+		return apiKey, nil
+	}
+}
+
 // GenerateAPIKey generates an API key based on the options provided
 func (*Generate) GenerateAPIKey(options GenerateKeyOptions) (any, error) {
 	switch options.Method {
@@ -236,6 +300,8 @@ func (*Generate) GenerateAPIKey(options GenerateKeyOptions) (any, error) {
 		return generateByte(options)
 	case Base32Option:
 		return generateBase32(options)
+	case Base62Option:
+		return generateBase62(options)
 	default:
 		return nil, fmt.Errorf("unsupported method %s", options.Method)
 	}
