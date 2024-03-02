@@ -12,7 +12,8 @@ func main() {
 	result, err := app.GenerateAPIKey(apiKey.GenerateKeyOptions{
 		Prefix: "pk",
 		Batch:  5,
-		Method: "base62",
+		Method: "uuidv4",
+		Dashes: true,
 	})
 
 	if err != nil {
