@@ -9,15 +9,16 @@ import (
 func main() {
 	app := apiKey.Initialize()
 
-	result, err := app.GenerateString(apiKey.StringGenOptions{
-		Pool:   "ABCDEFG1234567890",
+	result, err := app.GenerateString(apiKey.GenerateKeyOptions{
 		Prefix: "pk",
-		Length: 20,
 		Batch:  1,
+		Method: "bytes",
 	})
+
 	if err != nil {
-		fmt.Println("An error occurred")
+		panic(err)
+	} else {
+		fmt.Println(result)
 	}
 
-	fmt.Println(result)
 }
