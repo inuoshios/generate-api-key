@@ -9,10 +9,11 @@ import (
 func main() {
 	app := apiKey.Initialize()
 
-	result, err := app.GenerateString(apiKey.GenerateKeyOptions{
+	result, err := app.GenerateAPIKey(apiKey.GenerateKeyOptions{
 		Prefix: "pk",
-		Batch:  1,
-		Method: "bytes",
+		Batch:  5,
+		Method: "base32",
+		Dashes: true,
 	})
 
 	if err != nil {
