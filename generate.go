@@ -331,6 +331,43 @@ func generateUUIDV4(options GenerateKeyOptions) (any, error) {
 	}
 }
 
+// func generateUUIDv5(options GenerateKeyOptions) (any, error) {
+// 	if options.Length != 0 {
+// 		return nil, fmt.Errorf("length is not supported for uuidv5 method")
+// 	}
+// 	if options.Pool != "" {
+// 		return nil, fmt.Errorf("pool is not supported for uuidv5 method")
+// 	}
+// 	if options.Prefix == "" {
+// 		return nil, fmt.Errorf("prefix is required for uuidv5 method")
+// 	}
+
+// 	if options.Batch > 1 {
+// 		var batchResults []string
+// 		for i := uint32(0); i < options.Batch; i++ {
+// 			uuid := uuid.NewSHA1(uuid.New(), []byte(options.Prefix)).String()
+// 			var result string
+// 			result = options.Prefix
+// 			result += uuid
+// 			if options.Dashes {
+// 				batchResults = append(batchResults, result)
+// 			} else {
+// 				batchResults = append(batchResults, strings.ReplaceAll(result, "-", ""))
+// 			}
+// 		}
+// 		return batchResults, nil
+// 	} else {
+// 		uuid := uuid.NewSHA1(uuid.New(), []byte(options.Prefix)).String()
+// 		var result string
+// 		result = options.Prefix
+// 		result += uuid
+// 		if options.Dashes {
+// 			return result, nil
+// 		}
+// 		return strings.ReplaceAll(result, "-", ""), nil
+// 	}
+// }
+
 // GenerateAPIKey generates an API key based on the options provided
 func (*Generate) GenerateAPIKey(options GenerateKeyOptions) (any, error) {
 	switch options.Method {
@@ -344,6 +381,8 @@ func (*Generate) GenerateAPIKey(options GenerateKeyOptions) (any, error) {
 		return generateBase62(options)
 	case UUIDV4Option:
 		return generateUUIDV4(options)
+	// case UUIDV5Option:
+	// 	return generateUUIDv5(options)
 	default:
 		return nil, fmt.Errorf("unsupported method %s", options.Method)
 	}
